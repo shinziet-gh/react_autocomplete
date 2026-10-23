@@ -17,7 +17,6 @@ export const App: React.FC<{
   const updateSelected = (person: Person) => {
     setSelectedPerson(person);
     setQuery(person.name);
-    setShowMenu(false);
     onSelected?.(person);
   };
 
@@ -31,15 +30,15 @@ export const App: React.FC<{
         );
 
         setPeopleList(filtered);
-        setIsNotFound(peopleList.length === 0);
+        setIsNotFound(filtered.length === 0);
       } else {
         setPeopleList(peopleFromServer);
       }
     }, delay);
 
     return () => clearTimeout(timeout);
-    //Add peopleList, delay to the dependency array in case the delay prop changes.
-  }, [query, peopleList, delay]);
+    //Add delay to the dependency array for when the delay prop changes.
+  }, [query, delay]);
 
   return (
     <div className="container">
@@ -76,11 +75,11 @@ export const App: React.FC<{
               data-cy="suggestions-list"
             >
               <div className="dropdown-content">
-                {peopleList.map((person, index) => (
+                {peopleList.map(person => (
                   <div
                     className="dropdown-item"
                     data-cy="suggestion-item"
-                    key={index}
+                    key={person.slug}
                     onMouseDown={() => {
                       updateSelected(person);
                       setShowMenu(false);
