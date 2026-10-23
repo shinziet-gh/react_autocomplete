@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.scss';
 import { peopleFromServer } from './data/people';
 import { Person } from './types/Person';
@@ -11,9 +11,8 @@ export const App: React.FC<{
 
   const [query, setQuery] = useState<string>('');
   const [isNotFound, setIsNotFound] = useState<boolean>(false);
-  const [filteredPeople, setFilteredPeople] = useState<Person[]>([]);
+  const [peopleList, setPeopleList] = useState<Person[]>([]);
   const [showMenu, setShowMenu] = useState<boolean>(false);
-  const inputField = useRef<HTMLInputElement>(null);
 
   const updateSelected = (person: Person) => {
     setSelectedPerson(person);
@@ -27,19 +26,20 @@ export const App: React.FC<{
       const trimmed = query.trim();
 
       if (trimmed) {
-        setFilteredPeople(
-          peopleFromServer.filter(people =>
-            people.name.toLowerCase().includes(trimmed.toLowerCase()),
-          ),
+        const filtered = peopleFromServer.filter(people =>
+          people.name.toLowerCase().includes(trimmed.toLowerCase()),
         );
-        setIsNotFound(filteredPeople.length === 0);
+
+        setPeopleList(filtered);
+        setIsNotFound(peopleList.length === 0);
       } else {
-        setFilteredPeople(peopleFromServer);
+        setPeopleList(peopleFromServer);
       }
     }, delay);
 
     return () => clearTimeout(timeout);
-  }, [query]);
+    //Add peopleList, delay to the dependency array in case the delay prop changes.
+  }, [query, peopleList, delay]);
 
   return (
     <div className="container">
@@ -53,7 +53,6 @@ export const App: React.FC<{
         <div className="dropdown is-active">
           <div className="dropdown-trigger">
             <input
-              ref={inputField}
               type="text"
               placeholder="Enter a part of the name"
               className="input"
@@ -77,11 +76,11 @@ export const App: React.FC<{
               data-cy="suggestions-list"
             >
               <div className="dropdown-content">
-                {filteredPeople.map(person => (
+                {peopleList.map((person, index) => (
                   <div
                     className="dropdown-item"
                     data-cy="suggestion-item"
-                    key={person.name}
+                    key={index}
                     onMouseDown={() => {
                       updateSelected(person);
                       setShowMenu(false);
